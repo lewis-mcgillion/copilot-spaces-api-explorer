@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, ReactNode } from "react";
 import type { User, Org, ApiLogEntry } from "./types";
 import { ApiClient, onApiLog } from "./api";
 
@@ -45,7 +45,7 @@ export function AppProvider({ children, initUser, initOrgs, initError }: AppProv
   const [apiLog, setApiLog] = useState<ApiLogEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(initError ?? null);
-  const client = token ? new ApiClient(token, apiBaseUrl) : null;
+  const client = useMemo(() => token ? new ApiClient(token, apiBaseUrl) : null, [token, apiBaseUrl]);
 
   // Listen for API log entries
   useEffect(() => {
