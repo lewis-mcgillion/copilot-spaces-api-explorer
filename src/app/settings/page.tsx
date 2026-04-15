@@ -1,70 +1,47 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useApp } from "@/lib/context";
 
 export default function SettingsPage() {
-  const { token, apiBaseUrl, user, orgs, loading, error, setToken, setApiBaseUrl, verify } = useApp();
-  const [tokenInput, setTokenInput] = useState(token);
-  const [urlInput, setUrlInput] = useState(apiBaseUrl);
-  const [saved, setSaved] = useState(false);
-
-  // When context loads token from localStorage, sync to local input state
-  useEffect(() => { setTokenInput(token); }, [token]);
-  useEffect(() => { setUrlInput(apiBaseUrl); }, [apiBaseUrl]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!tokenInput.trim()) return;
-    setToken(tokenInput.trim());
-    setApiBaseUrl(urlInput.trim() || "https://api.github.com");
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  };
+  const { token, apiBaseUrl, user, orgs, loading, error, verify } = useApp();
 
   return (
     <div style={{ maxWidth: 600 }}>
       <h1 className="page-title" style={{ marginBottom: 8 }}>Settings</h1>
       <p style={{ color: "var(--muted)", marginBottom: 24 }}>
-        Configure your GitHub token and API endpoint.
+        Token is configured via the <code>NEXT_PUBLIC_GITHUB_TOKEN</code> environment variable.
       </p>
 
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label className="form-label" htmlFor="token-input">GitHub Personal Access Token</label>
-          <input
-            id="token-input"
-            type="password"
-            value={tokenInput}
-            onChange={(e) => setTokenInput(e.target.value)}
-            placeholder="ghp_..."
-            style={{ fontFamily: "monospace" }}
-          />
-          <p className="form-hint">
-            Requires <code>copilot</code> scope. Stored only in your browser&apos;s localStorage.
-          </p>
+      <div className="card" style={{ marginBottom: 16, padding: 16 }}>
+        <div className="form-group" style={{ marginBottom: 12 }}>
+          <label className="form-label">Token</label>
+          <code style={{ fontSize: 14 }}>
+            {token ? `${token.slice(0, 7)}${"•".repeat(20)}` : "Not configured"}
+          </code>
         </div>
+        <div className="form-group" style={{ marginBottom: 12 }}>
+          <label className="form-label">API Base URL</label>
+          <code style={{ fontSize: 14 }}>{apiBaseUrl}</code>
+        </div>
+        <p className="form-hint">
+          Set <code>NEXT_PUBLIC_GITHUB_TOKEN</code> and optionally <code>NEXT_PUBLIC_API_BASE_URL</code> in <code>.env.local</code>, then restart the dev server.
+        </p>
+      </div>
 
-        <div className="form-group">
-          <label className="form-label" htmlFor="url-input">API Base URL</label>
-          <input
-            id="url-input"
-            type="text"
-            value={urlInput}
-            onChange={(e) => setUrlInput(e.target.value)}
-          />
-        </div>
-
-        <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
-          <button className="btn btn-primary" type="submit">
-            {saved ? "✓ Saved" : "Save & Verify"}
-          </button>
-          <button className="btn btn-secondary" type="button" onClick={verify} disabled={!token || loading}>
-            {loading ? "Verifying..." : "Verify Token"}
-          </button>
-        </div>
-      </form>
+      <div style={{ marginBottom: 24 }}>
+        <button className="btn btn-primary" onClick={verify} disabled={!token || loading}>
+          {loading ? "Verifying..." : "Verify Token"}
+        </button>
+      </div>
 
       {error && <div className="alert-error">{error}</div>}
+
+      {!token && (
+        <div className="alert-error">
+          No token configured. Create a <code>.env.local</code> file with:<br />
+          <code>NEXT_PUBLIC_GITHUB_TOKEN=ghp_your_token_here</code>
+        </div>
+      )}
 
       {user && (
         <div className="alert-success" style={{ display: "flex", alignItems: "center", gap: 12 }}>

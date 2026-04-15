@@ -6,7 +6,7 @@ import type { Space } from "@/lib/types";
 import { RepoIcon, PlusIcon, OrganizationIcon, PersonIcon } from "@primer/octicons-react";
 
 export default function SpacesListPage() {
-  const { client, user, orgs } = useApp();
+  const { client, user, orgs, token } = useApp();
   const [spaces, setSpaces] = useState<(Space & { _ownerType: "user" | "org" })[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,13 +42,21 @@ export default function SpacesListPage() {
     fetchAll();
   }, [client, user, orgs]);
 
-  if (!user) {
+  if (!token) {
     return (
       <div className="empty-state">
         <h2 style={{ fontSize: 20, marginBottom: 8 }}>No token configured</h2>
         <p style={{ color: "var(--muted)" }}>
-          Go to <Link href="/settings" style={{ color: "var(--accent)" }}>Settings</Link> to add your GitHub token.
+          Set <code>NEXT_PUBLIC_GITHUB_TOKEN</code> in <code>.env.local</code> and restart the dev server.
         </p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="empty-state">
+        <p style={{ color: "var(--muted)" }}>Verifying token…</p>
       </div>
     );
   }

@@ -58,8 +58,6 @@ interface MockContextValue {
   loading: boolean;
   error: string | null;
   client: ApiClient | null;
-  setToken: (t: string) => void;
-  setApiBaseUrl: (u: string) => void;
   verify: () => Promise<void>;
   clearLog: () => void;
 }
@@ -96,8 +94,6 @@ export function createMockContext(overrides: Partial<MockContextValue> = {}): Mo
     loading: false,
     error: null,
     client: createMockClient(),
-    setToken: vi.fn(),
-    setApiBaseUrl: vi.fn(),
     verify: vi.fn().mockResolvedValue(undefined),
     clearLog: vi.fn(),
     ...overrides,

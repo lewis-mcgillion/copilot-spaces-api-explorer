@@ -3,6 +3,9 @@ import React, { createContext, useContext, useState, useCallback, useEffect, Rea
 import type { User, Org, ApiLogEntry } from "./types";
 import { ApiClient, onApiLog } from "./api";
 
+const ENV_TOKEN = process.env.NEXT_PUBLIC_GITHUB_TOKEN ?? "";
+const ENV_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://api.github.com";
+
 interface AppState {
   token: string;
   apiBaseUrl: string;
@@ -14,8 +17,6 @@ interface AppState {
 }
 
 interface AppContextValue extends AppState {
-  setToken: (token: string) => void;
-  setApiBaseUrl: (url: string) => void;
   verify: () => Promise<void>;
   client: ApiClient | null;
   clearLog: () => void;
@@ -30,22 +31,16 @@ export function useApp() {
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [token, setTokenState] = useState("");
-  const [apiBaseUrl, setApiBaseUrlState] = useState("https://api.github.com");
+  const token = ENV_TOKEN;
+  const apiBaseUrl = ENV_BASE_URL;
   const [user, setUser] = useState<User | null>(null);
   const [orgs, setOrgs] = useState<Org[]>([]);
   const [apiLog, setApiLog] = useState<ApiLogEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [client, setClient] = useState<ApiClient | null>(null);
-
-  // Load from localStorage on mount (client-side only)
-  useEffect(() => {
-    const saved = localStorage.getItem("spaces-explorer-token");
-    const savedUrl = localStorage.getItem("spaces-explorer-api-url");
-    if (saved) setTokenState(saved);
-    if (savedUrl) setApiBaseUrlState(savedUrl);
-  }, []);
+  const [client, setClient] = useState<ApiClient | null>(() =>
+    token ? new ApiClient(token, apiBaseUrl) : null
+  );
 
   // Listen for API log entries
   useEffect(() => {
@@ -54,35 +49,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const setToken = useCallback((t: string) => {
-    setTokenState(t);
-    localStorage.setItem("spaces-explorer-token", t);
-  }, []);
-
-  const setApiBaseUrl = useCallback((url: string) => {
-    setApiBaseUrlState(url);
-    localStorage.setItem("spaces-explorer-api-url", url);
-  }, []);
-
-  // Update client whenever token or baseUrl changes
+  // Auto-verify on mount
   useEffect(() => {
-    if (!token) {
-      setClient(null);
-      return;
-    }
-    const newClient = new ApiClient(token, apiBaseUrl);
-    setClient(newClient);
-
-    // Auto-verify with the new client immediately
+    if (!client) return;
+    let cancelled = false;
     setLoading(true);
     setError(null);
-    let cancelled = false;
     (async () => {
       try {
-        const u = await newClient.getUser();
+        const u = await client.getUser();
         if (cancelled) return;
         setUser(u);
-        const o = await newClient.listOrgs();
+        const o = await client.listOrgs();
         if (cancelled) return;
         setOrgs(o);
       } catch (e) {
@@ -95,7 +73,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     })();
     return () => { cancelled = true; };
-  }, [token, apiBaseUrl]);
+  }, [client]);
 
   const verify = useCallback(async () => {
     if (!client) return;
@@ -121,7 +99,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <AppContext.Provider
       value={{
         token, apiBaseUrl, user, orgs, apiLog, loading, error, client,
-        setToken, setApiBaseUrl, verify, clearLog,
+        verify, clearLog,
       }}
     >
       {children}

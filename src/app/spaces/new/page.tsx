@@ -5,17 +5,25 @@ import { useApp } from "@/lib/context";
 import type { CreateSpaceParams } from "@/lib/types";
 
 export default function CreateSpacePage() {
-  const { client, user, orgs } = useApp();
+  const { client, user, orgs, token } = useApp();
   const router = useRouter();
   const [form, setForm] = useState<CreateSpaceParams>({ name: "", description: "", general_instructions: "", base_role: "reader" });
   const [ownerKey, setOwnerKey] = useState("user");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  if (!token) {
+    return (
+      <div className="empty-state">
+        <p>Set <code>NEXT_PUBLIC_GITHUB_TOKEN</code> in <code>.env.local</code> and restart the dev server.</p>
+      </div>
+    );
+  }
+
   if (!user) {
     return (
       <div className="empty-state">
-        <p>Please configure your token in <a href="/settings" style={{ color: "var(--accent)" }}>Settings</a> first.</p>
+        <p style={{ color: "var(--muted)" }}>Verifying token…</p>
       </div>
     );
   }

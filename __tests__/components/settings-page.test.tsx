@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { createMockContext, createMockClient, mockUser, mockOrg } from "../helpers/test-utils";
+import { createMockContext, mockUser, mockOrg } from "../helpers/test-utils";
 
 // Mock next/link
 vi.mock("next/link", () => ({
@@ -29,16 +29,18 @@ describe("SettingsPage", () => {
     vi.clearAllMocks();
   });
 
-  it("renders the settings form with title", () => {
+  it("renders the settings page with title", () => {
     render(<SettingsPage />);
     expect(screen.getByText("Settings")).toBeInTheDocument();
-    expect(screen.getByText("GitHub Personal Access Token")).toBeInTheDocument();
-    expect(screen.getByText("API Base URL")).toBeInTheDocument();
   });
 
-  it("shows Save & Verify and Verify Token buttons", () => {
+  it("shows masked token", () => {
     render(<SettingsPage />);
-    expect(screen.getByText("Save & Verify")).toBeInTheDocument();
+    expect(screen.getByText(/ghp_tes/)).toBeInTheDocument();
+  });
+
+  it("shows Verify Token button", () => {
+    render(<SettingsPage />);
     expect(screen.getByText("Verify Token")).toBeInTheDocument();
   });
 
@@ -54,46 +56,24 @@ describe("SettingsPage", () => {
     expect(screen.getByText("testorg")).toBeInTheDocument();
   });
 
-  it("calls setToken and setApiBaseUrl on save", async () => {
-    render(<SettingsPage />);
-    const saveBtn = screen.getByText("Save & Verify");
-    fireEvent.click(saveBtn);
-
-    await waitFor(() => {
-      expect(mockCtx.setToken).toHaveBeenCalled();
-      expect(mockCtx.setApiBaseUrl).toHaveBeenCalled();
-    });
-  });
-
-  it("shows saved confirmation after clicking save", async () => {
-    render(<SettingsPage />);
-    fireEvent.click(screen.getByText("Save & Verify"));
-    await waitFor(() => {
-      expect(screen.getByText("✓ Saved")).toBeInTheDocument();
-    });
-  });
-
   it("calls verify when Verify Token is clicked", () => {
     render(<SettingsPage />);
     fireEvent.click(screen.getByText("Verify Token"));
     expect(mockCtx.verify).toHaveBeenCalled();
   });
 
-  it("shows error when present", () => {
-    const errCtx = createMockContext({ error: "Invalid token" });
-    vi.mocked(mockCtx).error = "Invalid token";
-
-    // Re-render doesn't pick up the mutation easily, so test with a fresh mock
-    // This verifies the error rendering path exists in the component
-    const { container } = render(<SettingsPage />);
-    // The error shows if mockCtx.error is set
-    expect(container).toBeTruthy();
+  it("shows no-token warning when token is empty", () => {
+    const origToken = mockCtx.token;
+    (mockCtx as Record<string, unknown>).token = "";
+    render(<SettingsPage />);
+    expect(screen.getByText(/No token configured/)).toBeInTheDocument();
+    (mockCtx as Record<string, unknown>).token = origToken;
   });
 
-  it("updates token input when user types", () => {
+  it("shows error when present", () => {
+    (mockCtx as Record<string, unknown>).error = "Invalid token";
     render(<SettingsPage />);
-    const tokenInput = screen.getByPlaceholderText("ghp_...");
-    fireEvent.change(tokenInput, { target: { value: "ghp_newtoken" } });
-    expect(tokenInput).toHaveValue("ghp_newtoken");
+    expect(screen.getByText("Invalid token")).toBeInTheDocument();
+    (mockCtx as Record<string, unknown>).error = null;
   });
 });
