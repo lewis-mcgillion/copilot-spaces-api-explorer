@@ -141,104 +141,104 @@ export default function ResourcesPage() {
 
   return (
     <div style={{ maxWidth: 800 }}>
-      <Link href={basePath} style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#0969da", textDecoration: "none", fontSize: 14, marginBottom: 16 }}>
+      <Link href={basePath} style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "var(--accent)", fontSize: 14, marginBottom: 16 }}>
         <ArrowLeftIcon size={14} /> Back to space
       </Link>
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: 0, borderBottom: "1px solid #d0d7de", marginBottom: 24 }}>
+      <div className="tab-bar">
         {[
           { label: "Overview", href: basePath },
           { label: "Resources", href: `${basePath}/resources` },
           { label: "Collaborators", href: `${basePath}/collaborators` },
         ].map((tab) => (
-          <Link key={tab.label} href={tab.href} style={{ padding: "8px 16px", textDecoration: "none", fontSize: 14, fontWeight: tab.label === "Resources" ? 600 : 400, color: tab.label === "Resources" ? "#1f2328" : "#656d76", borderBottom: tab.label === "Resources" ? "2px solid #fd8c73" : "2px solid transparent" }}>
+          <Link key={tab.label} href={tab.href} className={tab.label === "Resources" ? "active" : ""}>
             {tab.label}
           </Link>
         ))}
       </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+      <div className="page-header">
         <h2 style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>Resources ({resources.length})</h2>
-        <button onClick={() => setShowAdd(!showAdd)} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "6px 12px", backgroundColor: "#1f883d", color: "#fff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+        <button onClick={() => setShowAdd(!showAdd)} className="btn btn-primary btn-sm">
           <PlusIcon size={14} /> Add Resource
         </button>
       </div>
 
-      {error && <div style={{ padding: 12, backgroundColor: "#ffebe9", borderRadius: 6, marginBottom: 16, fontSize: 14 }}>{error}</div>}
+      {error && <div className="alert-error">{error}</div>}
 
       {/* Add form */}
       {showAdd && (
-        <form onSubmit={handleAdd} style={{ padding: 16, border: "1px solid #d0d7de", borderRadius: 6, marginBottom: 16 }}>
-          <div style={{ marginBottom: 12 }}>
-            <label style={{ display: "block", fontWeight: 600, fontSize: 14, marginBottom: 4 }}>Resource Type</label>
-            <select value={addType} onChange={(e) => { setAddType(e.target.value as ResourceType); setAddMeta({}); }} style={{ width: "100%", padding: "6px 12px", border: "1px solid #d0d7de", borderRadius: 6, fontSize: 14 }}>
+        <form onSubmit={handleAdd} style={{ padding: 16, border: "1px solid var(--border)", borderRadius: 6, marginBottom: 16, background: "var(--surface)" }}>
+          <div className="form-group">
+            <label className="form-label">Resource Type</label>
+            <select value={addType} onChange={(e) => { setAddType(e.target.value as ResourceType); setAddMeta({}); }}>
               {RESOURCE_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
           {metaFields(addType).map((field) => (
-            <div key={field} style={{ marginBottom: 12 }}>
-              <label style={{ display: "block", fontWeight: 600, fontSize: 14, marginBottom: 4, textTransform: "capitalize" }}>{field.replace(/_/g, " ")}</label>
+            <div key={field} className="form-group">
+              <label className="form-label" style={{ textTransform: "capitalize" }}>{field.replace(/_/g, " ")}</label>
               {field === "text" ? (
-                <textarea value={addMeta[field] || ""} onChange={(e) => setAddMeta({ ...addMeta, [field]: e.target.value })} rows={4} style={{ width: "100%", padding: "6px 12px", border: "1px solid #d0d7de", borderRadius: 6, fontSize: 14 }} />
+                <textarea value={addMeta[field] || ""} onChange={(e) => setAddMeta({ ...addMeta, [field]: e.target.value })} rows={4} />
               ) : (
-                <input value={addMeta[field] || ""} onChange={(e) => setAddMeta({ ...addMeta, [field]: e.target.value })} style={{ width: "100%", padding: "6px 12px", border: "1px solid #d0d7de", borderRadius: 6, fontSize: 14 }} />
+                <input value={addMeta[field] || ""} onChange={(e) => setAddMeta({ ...addMeta, [field]: e.target.value })} />
               )}
             </div>
           ))}
           <div style={{ display: "flex", gap: 8 }}>
-            <button type="submit" disabled={saving} style={{ padding: "6px 16px", backgroundColor: "#1f883d", color: "#fff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+            <button type="submit" disabled={saving} className="btn btn-primary btn-sm">
               {saving ? "Adding..." : "Add Resource"}
             </button>
-            <button type="button" onClick={() => setShowAdd(false)} style={{ padding: "6px 16px", border: "1px solid #d0d7de", borderRadius: 6, fontSize: 13, cursor: "pointer", background: "#fff" }}>Cancel</button>
+            <button type="button" onClick={() => setShowAdd(false)} className="btn btn-secondary btn-sm">Cancel</button>
           </div>
         </form>
       )}
 
       {/* Resources list */}
-      {loading ? <p>Loading...</p> : resources.length === 0 ? (
-        <div style={{ textAlign: "center", padding: 32, border: "1px dashed #d0d7de", borderRadius: 6 }}>
-          <p style={{ color: "#656d76" }}>No resources yet.</p>
+      {loading ? <p style={{ color: "var(--muted)" }}>Loading...</p> : resources.length === 0 ? (
+        <div className="empty-state">
+          <p>No resources yet.</p>
         </div>
       ) : (
-        <div style={{ border: "1px solid #d0d7de", borderRadius: 6 }}>
-          {resources.map((r, i) => (
-            <div key={r.id} style={{ padding: 12, borderBottom: i < resources.length - 1 ? "1px solid #d0d7de" : "none" }}>
+        <div className="list-container">
+          {resources.map((r) => (
+            <div key={r.id} className="list-row">
               {editingId === r.id ? (
-                <div>
-                  <div style={{ marginBottom: 8 }}>
-                    <select value={editType} onChange={(e) => setEditType(e.target.value as ResourceType)} style={{ padding: "4px 8px", border: "1px solid #d0d7de", borderRadius: 4, fontSize: 13 }}>
+                <div style={{ width: "100%" }}>
+                  <div className="form-group">
+                    <select value={editType} onChange={(e) => setEditType(e.target.value as ResourceType)} style={{ width: "auto" }}>
                       {RESOURCE_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   </div>
                   {metaFields(editType).map((field) => (
-                    <div key={field} style={{ marginBottom: 8 }}>
-                      <label style={{ fontSize: 12, fontWeight: 600 }}>{field}</label>
-                      <input value={editMeta[field] || ""} onChange={(e) => setEditMeta({ ...editMeta, [field]: e.target.value })} style={{ width: "100%", padding: "4px 8px", border: "1px solid #d0d7de", borderRadius: 4, fontSize: 13 }} />
+                    <div key={field} className="form-group">
+                      <label className="form-label" style={{ fontSize: 12 }}>{field}</label>
+                      <input value={editMeta[field] || ""} onChange={(e) => setEditMeta({ ...editMeta, [field]: e.target.value })} />
                     </div>
                   ))}
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={() => handleUpdate(r.id)} disabled={saving} style={{ padding: "4px 12px", backgroundColor: "#1f883d", color: "#fff", border: "none", borderRadius: 4, fontSize: 12, cursor: "pointer" }}>Save</button>
-                    <button onClick={() => setEditingId(null)} style={{ padding: "4px 12px", border: "1px solid #d0d7de", borderRadius: 4, fontSize: 12, cursor: "pointer", background: "#fff" }}>Cancel</button>
+                    <button onClick={() => handleUpdate(r.id)} disabled={saving} className="btn btn-primary btn-sm">Save</button>
+                    <button onClick={() => setEditingId(null)} className="btn btn-secondary btn-sm">Cancel</button>
                   </div>
                 </div>
               ) : (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}>
                     <ResourceIcon type={r.resource_type} />
-                    <div>
-                      <div style={{ fontWeight: 500, fontSize: 14 }}>{resourceLabel(r)}</div>
-                      <div style={{ fontSize: 12, color: "#656d76" }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 500 }}>{resourceLabel(r)}</div>
+                      <div style={{ fontSize: 12, color: "var(--muted)" }}>
                         {r.resource_type} · ID: {r.id}
                       </div>
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 4 }}>
-                    <button onClick={() => handleGetSingle(r.id)} style={{ padding: "4px 8px", border: "1px solid #d0d7de", borderRadius: 4, fontSize: 11, cursor: "pointer", background: "#f6f8fa" }}>GET</button>
-                    <button onClick={() => { setEditingId(r.id); setEditType(r.resource_type); setEditMeta(Object.fromEntries(Object.entries(r.metadata).map(([k, v]) => [k, String(v ?? "")]))); }} style={{ padding: "4px 8px", border: "1px solid #d0d7de", borderRadius: 4, fontSize: 11, cursor: "pointer", background: "#f6f8fa" }}>Edit</button>
-                    <button onClick={() => handleDelete(r.id)} style={{ padding: "4px 8px", border: "1px solid #ff818266", borderRadius: 4, fontSize: 11, cursor: "pointer", background: "#ffebe9", color: "#cf222e" }}><TrashIcon size={12} /></button>
+                  <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                    <button onClick={() => handleGetSingle(r.id)} className="btn btn-secondary btn-sm">GET</button>
+                    <button onClick={() => { setEditingId(r.id); setEditType(r.resource_type); setEditMeta(Object.fromEntries(Object.entries(r.metadata).map(([k, v]) => [k, String(v ?? "")]))); }} className="btn btn-secondary btn-sm">Edit</button>
+                    <button onClick={() => handleDelete(r.id)} className="btn btn-danger btn-sm"><TrashIcon size={12} /></button>
                   </div>
-                </div>
+                </>
               )}
             </div>
           ))}

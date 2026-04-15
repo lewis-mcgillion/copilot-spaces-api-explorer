@@ -7,7 +7,7 @@ export default function Home() {
       <div style={{ textAlign: "center", marginBottom: 32 }}>
         <CopilotIcon size={48} />
         <h1 style={{ fontSize: 28, fontWeight: 700, margin: "16px 0 8px" }}>Copilot Spaces Explorer</h1>
-        <p style={{ fontSize: 16, color: "#656d76" }}>
+        <p style={{ color: "var(--muted)", fontSize: 16 }}>
           Manage Copilot Spaces through the public REST API.
           Create, edit, and delete spaces, resources, and collaborators.
         </p>
@@ -19,23 +19,16 @@ export default function Home() {
           { href: "/spaces/new", icon: PlusIcon, title: "Create Space", desc: "Create a new Copilot Space" },
           { href: "/settings", icon: GearIcon, title: "Settings", desc: "Configure your API token" },
         ].map((card) => (
-          <Link
-            key={card.href}
-            href={card.href}
-            style={{
-              display: "block", padding: 20, border: "1px solid #d0d7de", borderRadius: 6,
-              textDecoration: "none", color: "inherit", transition: "border-color 0.15s",
-            }}
-          >
+          <Link key={card.href} href={card.href} className="card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
             <card.icon size={24} />
             <h3 style={{ fontSize: 16, fontWeight: 600, margin: "8px 0 4px" }}>{card.title}</h3>
-            <p style={{ fontSize: 13, color: "#656d76", margin: 0 }}>{card.desc}</p>
+            <p style={{ fontSize: 13, color: "var(--muted)", margin: 0 }}>{card.desc}</p>
           </Link>
         ))}
       </div>
 
-      <div style={{ marginTop: 32, padding: 16, background: "#f6f8fa", borderRadius: 6, fontSize: 13 }}>
-        <strong>Quick start:</strong> Go to <Link href="/settings" style={{ color: "#0969da" }}>Settings</Link> and
+      <div style={{ marginTop: 32, padding: 16, background: "var(--surface)", borderRadius: 6, fontSize: 13, border: "1px solid var(--border)" }}>
+        <strong>Quick start:</strong> Go to <Link href="/settings" style={{ color: "var(--accent)" }}>Settings</Link> and
         enter your GitHub PAT with <code>copilot</code> scope to get started.
       </div>
     </div>

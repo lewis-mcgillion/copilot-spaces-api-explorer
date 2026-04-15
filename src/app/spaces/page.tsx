@@ -44,10 +44,10 @@ export default function SpacesListPage() {
 
   if (!user) {
     return (
-      <div style={{ textAlign: "center", padding: 40 }}>
+      <div className="empty-state">
         <h2 style={{ fontSize: 20, marginBottom: 8 }}>No token configured</h2>
-        <p style={{ color: "#656d76" }}>
-          Go to <Link href="/settings" style={{ color: "#0969da" }}>Settings</Link> to add your GitHub token.
+        <p style={{ color: "var(--muted)" }}>
+          Go to <Link href="/settings" style={{ color: "var(--accent)" }}>Settings</Link> to add your GitHub token.
         </p>
       </div>
     );
@@ -55,39 +55,21 @@ export default function SpacesListPage() {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 600, margin: 0 }}>Copilot Spaces</h1>
-        <Link
-          href="/spaces/new"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "6px 16px",
-            backgroundColor: "#1f883d",
-            color: "#fff",
-            borderRadius: 6,
-            textDecoration: "none",
-            fontSize: 14,
-            fontWeight: 600,
-          }}
-        >
+      <div className="page-header">
+        <h1 className="page-title">Copilot Spaces</h1>
+        <Link href="/spaces/new" className="btn btn-primary">
           <PlusIcon size={16} />
           New Space
         </Link>
       </div>
 
-      {loading && <p style={{ color: "#656d76" }}>Loading spaces...</p>}
-      {error && (
-        <div style={{ padding: 12, backgroundColor: "#ffebe9", borderRadius: 6, marginBottom: 16 }}>
-          {error}
-        </div>
-      )}
+      {loading && <p style={{ color: "var(--muted)" }}>Loading spaces...</p>}
+      {error && <div className="alert-error">{error}</div>}
 
       {!loading && spaces.length === 0 && (
-        <div style={{ textAlign: "center", padding: 40, border: "1px dashed #d0d7de", borderRadius: 6 }}>
-          <RepoIcon size={32} className="color-fg-muted" />
-          <p style={{ color: "#656d76", marginTop: 8 }}>No spaces found. Create your first space!</p>
+        <div className="empty-state">
+          <RepoIcon size={32} />
+          <p style={{ marginTop: 8 }}>No spaces found. Create your first space!</p>
         </div>
       )}
 
@@ -98,30 +80,20 @@ export default function SpacesListPage() {
             href={`/spaces/${space._ownerType}/${space.owner?.login}/${space.number}`}
             style={{ textDecoration: "none", color: "inherit" }}
           >
-            <div
-              style={{
-                border: "1px solid #d0d7de",
-                borderRadius: 6,
-                padding: 16,
-                cursor: "pointer",
-                transition: "border-color 0.15s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#0969da")}
-              onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#d0d7de")}
-            >
+            <div className="card">
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                 {space._ownerType === "org" ? <OrganizationIcon size={16} /> : <PersonIcon size={16} />}
-                <span style={{ fontSize: 12, color: "#656d76" }}>
+                <span style={{ fontSize: 12, color: "var(--muted)" }}>
                   {space.owner?.login} #{space.number}
                 </span>
               </div>
               <h3 style={{ fontSize: 16, fontWeight: 600, margin: "0 0 4px" }}>{space.name}</h3>
               {space.description && (
-                <p style={{ fontSize: 13, color: "#656d76", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <p style={{ fontSize: 13, color: "var(--muted)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {space.description}
                 </p>
               )}
-              <div style={{ display: "flex", gap: 12, marginTop: 12, fontSize: 12, color: "#656d76" }}>
+              <div style={{ display: "flex", gap: 12, marginTop: 12, fontSize: 12, color: "var(--muted)" }}>
                 {space.base_role && <span>Role: {space.base_role}</span>}
                 <span>Updated {new Date(space.updated_at).toLocaleDateString()}</span>
               </div>

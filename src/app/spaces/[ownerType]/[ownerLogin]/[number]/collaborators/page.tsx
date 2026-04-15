@@ -97,105 +97,105 @@ export default function CollaboratorsPage() {
 
   return (
     <div style={{ maxWidth: 800 }}>
-      <Link href={basePath} style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#0969da", textDecoration: "none", fontSize: 14, marginBottom: 16 }}>
+      <Link href={basePath} style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "var(--accent)", fontSize: 14, marginBottom: 16 }}>
         <ArrowLeftIcon size={14} /> Back to space
       </Link>
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: 0, borderBottom: "1px solid #d0d7de", marginBottom: 24 }}>
+      <div className="tab-bar">
         {[
           { label: "Overview", href: basePath },
           { label: "Resources", href: `${basePath}/resources` },
           { label: "Collaborators", href: `${basePath}/collaborators` },
         ].map((tab) => (
-          <Link key={tab.label} href={tab.href} style={{ padding: "8px 16px", textDecoration: "none", fontSize: 14, fontWeight: tab.label === "Collaborators" ? 600 : 400, color: tab.label === "Collaborators" ? "#1f2328" : "#656d76", borderBottom: tab.label === "Collaborators" ? "2px solid #fd8c73" : "2px solid transparent" }}>
+          <Link key={tab.label} href={tab.href} className={tab.label === "Collaborators" ? "active" : ""}>
             {tab.label}
           </Link>
         ))}
       </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+      <div className="page-header">
         <h2 style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>Collaborators ({collaborators.length})</h2>
-        <button onClick={() => setShowAdd(!showAdd)} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "6px 12px", backgroundColor: "#1f883d", color: "#fff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+        <button onClick={() => setShowAdd(!showAdd)} className="btn btn-primary btn-sm">
           <PlusIcon size={14} /> Add Collaborator
         </button>
       </div>
 
-      {error && <div style={{ padding: 12, backgroundColor: "#ffebe9", borderRadius: 6, marginBottom: 16, fontSize: 14 }}>{error}</div>}
+      {error && <div className="alert-error">{error}</div>}
 
       {/* Add form */}
       {showAdd && (
-        <form onSubmit={handleAdd} style={{ padding: 16, border: "1px solid #d0d7de", borderRadius: 6, marginBottom: 16 }}>
-          <div style={{ marginBottom: 12 }}>
-            <label style={{ display: "block", fontWeight: 600, fontSize: 14, marginBottom: 4 }}>Actor Type</label>
-            <select value={addForm.actor_type} onChange={(e) => setAddForm({ ...addForm, actor_type: e.target.value })} style={{ width: "100%", padding: "6px 12px", border: "1px solid #d0d7de", borderRadius: 6, fontSize: 14 }}>
+        <form onSubmit={handleAdd} style={{ padding: 16, border: "1px solid var(--border)", borderRadius: 6, marginBottom: 16, background: "var(--surface)" }}>
+          <div className="form-group">
+            <label className="form-label">Actor Type</label>
+            <select value={addForm.actor_type} onChange={(e) => setAddForm({ ...addForm, actor_type: e.target.value })}>
               <option value="User">User</option>
               <option value="Team">Team</option>
               <option value="Organization">Organization</option>
             </select>
           </div>
-          <div style={{ marginBottom: 12 }}>
-            <label style={{ display: "block", fontWeight: 600, fontSize: 14, marginBottom: 4 }}>
+          <div className="form-group">
+            <label className="form-label">
               {addForm.actor_type === "Team" ? "Team Slug" : addForm.actor_type === "Organization" ? "Org Login" : "Username"}
             </label>
-            <input required value={addForm.actor_identifier} onChange={(e) => setAddForm({ ...addForm, actor_identifier: e.target.value })} style={{ width: "100%", padding: "6px 12px", border: "1px solid #d0d7de", borderRadius: 6, fontSize: 14 }} />
+            <input required value={addForm.actor_identifier} onChange={(e) => setAddForm({ ...addForm, actor_identifier: e.target.value })} />
           </div>
-          <div style={{ marginBottom: 12 }}>
-            <label style={{ display: "block", fontWeight: 600, fontSize: 14, marginBottom: 4 }}>Role</label>
-            <select value={addForm.role_name} onChange={(e) => setAddForm({ ...addForm, role_name: e.target.value })} style={{ width: "100%", padding: "6px 12px", border: "1px solid #d0d7de", borderRadius: 6, fontSize: 14 }}>
+          <div className="form-group">
+            <label className="form-label">Role</label>
+            <select value={addForm.role_name} onChange={(e) => setAddForm({ ...addForm, role_name: e.target.value })}>
               <option value="read">Read</option>
               <option value="write">Write</option>
               <option value="admin">Admin</option>
             </select>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button type="submit" disabled={saving} style={{ padding: "6px 16px", backgroundColor: "#1f883d", color: "#fff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+            <button type="submit" disabled={saving} className="btn btn-primary btn-sm">
               {saving ? "Adding..." : "Add Collaborator"}
             </button>
-            <button type="button" onClick={() => setShowAdd(false)} style={{ padding: "6px 16px", border: "1px solid #d0d7de", borderRadius: 6, fontSize: 13, cursor: "pointer", background: "#fff" }}>Cancel</button>
+            <button type="button" onClick={() => setShowAdd(false)} className="btn btn-secondary btn-sm">Cancel</button>
           </div>
         </form>
       )}
 
       {/* Collaborators list */}
-      {loading ? <p>Loading...</p> : collaborators.length === 0 ? (
-        <div style={{ textAlign: "center", padding: 32, border: "1px dashed #d0d7de", borderRadius: 6 }}>
-          <p style={{ color: "#656d76" }}>No collaborators yet.</p>
+      {loading ? <p style={{ color: "var(--muted)" }}>Loading...</p> : collaborators.length === 0 ? (
+        <div className="empty-state">
+          <p>No collaborators yet.</p>
         </div>
       ) : (
-        <div style={{ border: "1px solid #d0d7de", borderRadius: 6 }}>
-          {collaborators.map((c, i) => {
+        <div className="list-container">
+          {collaborators.map((c) => {
             const key = collabKey(c);
             return (
-              <div key={key} style={{ padding: 12, borderBottom: i < collaborators.length - 1 ? "1px solid #d0d7de" : "none" }}>
+              <div key={key} className="list-row">
                 {editingKey === key ? (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
                     <ActorIcon type={c.actor_type} />
-                    <span style={{ fontWeight: 500, fontSize: 14 }}>{c.actor_identifier}</span>
-                    <select value={editRole} onChange={(e) => setEditRole(e.target.value)} style={{ padding: "4px 8px", border: "1px solid #d0d7de", borderRadius: 4, fontSize: 13 }}>
+                    <span style={{ fontWeight: 500 }}>{c.actor_identifier}</span>
+                    <select value={editRole} onChange={(e) => setEditRole(e.target.value)} style={{ width: "auto" }}>
                       <option value="read">Read</option>
                       <option value="write">Write</option>
                       <option value="admin">Admin</option>
                     </select>
-                    <button onClick={() => handleUpdate(c)} disabled={saving} style={{ padding: "4px 12px", backgroundColor: "#1f883d", color: "#fff", border: "none", borderRadius: 4, fontSize: 12, cursor: "pointer" }}>Save</button>
-                    <button onClick={() => setEditingKey(null)} style={{ padding: "4px 12px", border: "1px solid #d0d7de", borderRadius: 4, fontSize: 12, cursor: "pointer", background: "#fff" }}>Cancel</button>
+                    <button onClick={() => handleUpdate(c)} disabled={saving} className="btn btn-primary btn-sm">Save</button>
+                    <button onClick={() => setEditingKey(null)} className="btn btn-secondary btn-sm">Cancel</button>
                   </div>
                 ) : (
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
                       <ActorIcon type={c.actor_type} />
                       <div>
-                        <span style={{ fontWeight: 500, fontSize: 14 }}>{c.actor_identifier}</span>
-                        <div style={{ fontSize: 12, color: "#656d76" }}>
+                        <span style={{ fontWeight: 500 }}>{c.actor_identifier}</span>
+                        <div style={{ fontSize: 12, color: "var(--muted)" }}>
                           {c.actor_type} · Role: {c.role_name}
                         </div>
                       </div>
                     </div>
-                    <div style={{ display: "flex", gap: 4 }}>
-                      <button onClick={() => { setEditingKey(key); setEditRole(c.role_name); }} style={{ padding: "4px 8px", border: "1px solid #d0d7de", borderRadius: 4, fontSize: 11, cursor: "pointer", background: "#f6f8fa" }}>Edit Role</button>
-                      <button onClick={() => handleRemove(c)} style={{ padding: "4px 8px", border: "1px solid #ff818266", borderRadius: 4, fontSize: 11, cursor: "pointer", background: "#ffebe9", color: "#cf222e" }}><TrashIcon size={12} /></button>
+                    <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                      <button onClick={() => { setEditingKey(key); setEditRole(c.role_name); }} className="btn btn-secondary btn-sm">Edit Role</button>
+                      <button onClick={() => handleRemove(c)} className="btn btn-danger btn-sm"><TrashIcon size={12} /></button>
                     </div>
-                  </div>
+                  </>
                 )}
               </div>
             );

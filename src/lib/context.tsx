@@ -91,12 +91,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [client]);
 
-  // Auto-verify when client changes (token set)
+  // Auto-verify whenever client changes (new token or URL)
   useEffect(() => {
-    if (client && !user) {
+    if (client) {
       verify();
     }
-  }, [client, user, verify]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [client]);
 
   const clearLog = useCallback(() => setApiLog([]), []);
 

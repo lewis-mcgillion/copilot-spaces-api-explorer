@@ -70,37 +70,37 @@ export default function SpaceDetailPage() {
     }
   };
 
-  if (loading) return <p>Loading space...</p>;
-  if (error) return <div style={{ padding: 12, backgroundColor: "#ffebe9", borderRadius: 6 }}>{error}</div>;
+  if (loading) return <p style={{ color: "var(--muted)" }}>Loading space...</p>;
+  if (error) return <div className="alert-error">{error}</div>;
   if (!space) return <p>Space not found.</p>;
 
   const basePath = `/spaces/${ownerType}/${ownerLogin}/${spaceNumber}`;
 
   return (
     <div style={{ maxWidth: 800 }}>
-      <Link href="/spaces" style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#0969da", textDecoration: "none", fontSize: 14, marginBottom: 16 }}>
+      <Link href="/spaces" style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "var(--accent)", fontSize: 14, marginBottom: 16 }}>
         <ArrowLeftIcon size={14} /> Back to spaces
       </Link>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+      <div className="page-header">
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 600, margin: 0 }}>{space.name}</h1>
-          <div style={{ fontSize: 13, color: "#656d76", marginTop: 4 }}>
+          <h1 className="page-title">{space.name}</h1>
+          <div style={{ fontSize: 13, color: "var(--muted)", marginTop: 4 }}>
             {ownerLogin} #{spaceNumber} · {ownerType === "org" ? "Organization" : "User"} owned
           </div>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={() => setEditing(!editing)} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "6px 12px", border: "1px solid #d0d7de", borderRadius: 6, background: "#f6f8fa", cursor: "pointer", fontSize: 13 }}>
+          <button onClick={() => setEditing(!editing)} className="btn btn-secondary btn-sm">
             <PencilIcon size={14} /> Edit
           </button>
-          <button onClick={() => setConfirmDelete(true)} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "6px 12px", border: "1px solid #ff818266", borderRadius: 6, background: "#ffebe9", cursor: "pointer", fontSize: 13, color: "#cf222e" }}>
+          <button onClick={() => setConfirmDelete(true)} className="btn btn-danger btn-sm">
             <TrashIcon size={14} /> Delete
           </button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: 0, borderBottom: "1px solid #d0d7de", marginBottom: 24 }}>
+      <div className="tab-bar">
         {[
           { label: "Overview", href: basePath },
           { label: "Resources", href: `${basePath}/resources` },
@@ -108,18 +108,7 @@ export default function SpaceDetailPage() {
         ].map((tab) => {
           const active = typeof window !== "undefined" && window.location.pathname === tab.href;
           return (
-            <Link
-              key={tab.label}
-              href={tab.href}
-              style={{
-                padding: "8px 16px",
-                textDecoration: "none",
-                fontSize: 14,
-                fontWeight: active ? 600 : 400,
-                color: active ? "#1f2328" : "#656d76",
-                borderBottom: active ? "2px solid #fd8c73" : "2px solid transparent",
-              }}
-            >
+            <Link key={tab.label} href={tab.href} className={active ? "active" : ""}>
               {tab.label}
             </Link>
           );
@@ -128,14 +117,14 @@ export default function SpaceDetailPage() {
 
       {/* Delete confirmation */}
       {confirmDelete && (
-        <div style={{ padding: 16, backgroundColor: "#ffebe9", border: "1px solid #ff818266", borderRadius: 6, marginBottom: 16 }}>
+        <div style={{ padding: 16, backgroundColor: "#ffebe9", border: "1px solid rgba(255,129,130,0.4)", borderRadius: 6, marginBottom: 16 }}>
           <p style={{ margin: "0 0 8px", fontWeight: 600 }}>Are you sure you want to delete &quot;{space.name}&quot;?</p>
-          <p style={{ margin: "0 0 12px", fontSize: 13, color: "#656d76" }}>This action cannot be undone.</p>
+          <p style={{ margin: "0 0 12px", fontSize: 13, color: "var(--muted)" }}>This action cannot be undone.</p>
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={handleDelete} disabled={saving} style={{ padding: "6px 16px", backgroundColor: "#cf222e", color: "#fff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+            <button onClick={handleDelete} disabled={saving} className="btn btn-primary" style={{ backgroundColor: "var(--danger)" }}>
               {saving ? "Deleting..." : "Delete Space"}
             </button>
-            <button onClick={() => setConfirmDelete(false)} style={{ padding: "6px 16px", border: "1px solid #d0d7de", borderRadius: 6, fontSize: 13, cursor: "pointer", background: "#fff" }}>
+            <button onClick={() => setConfirmDelete(false)} className="btn btn-secondary">
               Cancel
             </button>
           </div>
@@ -146,8 +135,8 @@ export default function SpaceDetailPage() {
       {editing ? (
         <form onSubmit={handleUpdate}>
           {(["name", "description", "general_instructions"] as const).map((field) => (
-            <div key={field} style={{ marginBottom: 16 }}>
-              <label style={{ display: "block", fontWeight: 600, fontSize: 14, marginBottom: 4, textTransform: "capitalize" }}>
+            <div key={field} className="form-group">
+              <label className="form-label" style={{ textTransform: "capitalize" }}>
                 {field.replace(/_/g, " ")}
               </label>
               {field === "general_instructions" || field === "description" ? (
@@ -155,29 +144,27 @@ export default function SpaceDetailPage() {
                   value={editForm[field] || ""}
                   onChange={(e) => setEditForm({ ...editForm, [field]: e.target.value })}
                   rows={field === "general_instructions" ? 6 : 3}
-                  style={{ width: "100%", padding: "6px 12px", border: "1px solid #d0d7de", borderRadius: 6, fontSize: 14, resize: "vertical" }}
                 />
               ) : (
                 <input
                   value={editForm[field] || ""}
                   onChange={(e) => setEditForm({ ...editForm, [field]: e.target.value })}
-                  style={{ width: "100%", padding: "6px 12px", border: "1px solid #d0d7de", borderRadius: 6, fontSize: 14 }}
                 />
               )}
             </div>
           ))}
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: "block", fontWeight: 600, fontSize: 14, marginBottom: 4 }}>Base Role</label>
-            <select value={editForm.base_role} onChange={(e) => setEditForm({ ...editForm, base_role: e.target.value })} style={{ width: "100%", padding: "6px 12px", border: "1px solid #d0d7de", borderRadius: 6, fontSize: 14 }}>
+          <div className="form-group">
+            <label className="form-label">Base Role</label>
+            <select value={editForm.base_role} onChange={(e) => setEditForm({ ...editForm, base_role: e.target.value })}>
               <option value="reader">Reader</option>
               <option value="no_access">No Access</option>
             </select>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button type="submit" disabled={saving} style={{ padding: "6px 16px", backgroundColor: "#1f883d", color: "#fff", border: "none", borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+            <button type="submit" disabled={saving} className="btn btn-primary">
               {saving ? "Saving..." : "Save Changes"}
             </button>
-            <button type="button" onClick={() => setEditing(false)} style={{ padding: "6px 16px", border: "1px solid #d0d7de", borderRadius: 6, fontSize: 14, cursor: "pointer", background: "#fff" }}>
+            <button type="button" onClick={() => setEditing(false)} className="btn btn-secondary">
               Cancel
             </button>
           </div>
@@ -187,19 +174,19 @@ export default function SpaceDetailPage() {
           {space.description && (
             <div style={{ marginBottom: 16 }}>
               <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Description</h3>
-              <p style={{ fontSize: 14, color: "#1f2328", margin: 0 }}>{space.description}</p>
+              <p style={{ margin: 0 }}>{space.description}</p>
             </div>
           )}
           {space.general_instructions && (
             <div style={{ marginBottom: 16 }}>
               <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>General Instructions</h3>
-              <pre style={{ fontSize: 13, whiteSpace: "pre-wrap", background: "#f6f8fa", padding: 12, borderRadius: 6, margin: 0 }}>
+              <pre style={{ fontSize: 13, whiteSpace: "pre-wrap", background: "var(--surface)", padding: 12, borderRadius: 6, border: "1px solid var(--border)", margin: 0 }}>
                 {space.general_instructions}
               </pre>
             </div>
           )}
-          <div style={{ display: "flex", gap: 24, fontSize: 13, color: "#656d76" }}>
-            <span>Base role: <strong>{space.base_role || "N/A"}</strong></span>
+          <div style={{ display: "flex", gap: 24, fontSize: 13, color: "var(--muted)" }}>
+            <span>Base role: <strong style={{ color: "var(--foreground)" }}>{space.base_role || "N/A"}</strong></span>
             <span>Created: {new Date(space.created_at).toLocaleString()}</span>
             <span>Updated: {new Date(space.updated_at).toLocaleString()}</span>
           </div>
