@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef, ReactNode } from "react";
 import type { User, Org, ApiLogEntry } from "./types";
 import { ApiClient, onApiLog } from "./api";
 
@@ -30,17 +30,19 @@ export function useApp() {
   return ctx;
 }
 
+// Create client once at module level (avoids re-creation on re-render)
+const globalClient = ENV_TOKEN ? new ApiClient(ENV_TOKEN, ENV_BASE_URL) : null;
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const token = ENV_TOKEN;
   const apiBaseUrl = ENV_BASE_URL;
   const [user, setUser] = useState<User | null>(null);
   const [orgs, setOrgs] = useState<Org[]>([]);
   const [apiLog, setApiLog] = useState<ApiLogEntry[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!!globalClient);
   const [error, setError] = useState<string | null>(null);
-  const [client, setClient] = useState<ApiClient | null>(() =>
-    token ? new ApiClient(token, apiBaseUrl) : null
-  );
+  const client = globalClient;
+  const didVerify = useRef(false);
 
   // Listen for API log entries
   useEffect(() => {
@@ -49,30 +51,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  // Auto-verify on mount
+  // Auto-verify once on mount
   useEffect(() => {
-    if (!client) return;
-    let cancelled = false;
+    if (!client || didVerify.current) return;
+    didVerify.current = true;
     setLoading(true);
     setError(null);
+    console.log("[spaces-explorer] Verifying token...");
     (async () => {
       try {
         const u = await client.getUser();
-        if (cancelled) return;
+        console.log("[spaces-explorer] Verified user:", u.login);
         setUser(u);
         const o = await client.listOrgs();
-        if (cancelled) return;
+        console.log("[spaces-explorer] Found", o.length, "orgs");
         setOrgs(o);
       } catch (e) {
-        if (cancelled) return;
+        console.error("[spaces-explorer] Verify failed:", e);
         setError(e instanceof Error ? e.message : "Verification failed");
         setUser(null);
         setOrgs([]);
       } finally {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
   }, [client]);
 
   const verify = useCallback(async () => {
