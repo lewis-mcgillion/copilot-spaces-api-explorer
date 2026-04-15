@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState, useCallback, useEffect, useRef, ReactNode } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
 import type { User, Org, ApiLogEntry } from "./types";
 import { ApiClient, onApiLog } from "./api";
 
@@ -30,16 +30,22 @@ export function useApp() {
   return ctx;
 }
 
-export function AppProvider({ children }: { children: ReactNode }) {
+interface AppProviderProps {
+  children: ReactNode;
+  initUser: User | null;
+  initOrgs: Org[];
+  initError?: string;
+}
+
+export function AppProvider({ children, initUser, initOrgs, initError }: AppProviderProps) {
   const token = ENV_TOKEN;
   const apiBaseUrl = ENV_BASE_URL;
-  const [user, setUser] = useState<User | null>(null);
-  const [orgs, setOrgs] = useState<Org[]>([]);
+  const [user, setUser] = useState<User | null>(initUser);
+  const [orgs, setOrgs] = useState<Org[]>(initOrgs);
   const [apiLog, setApiLog] = useState<ApiLogEntry[]>([]);
-  const [loading, setLoading] = useState(!!token);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(initError ?? null);
   const client = token ? new ApiClient(token, apiBaseUrl) : null;
-  const didInit = useRef(false);
 
   // Listen for API log entries
   useEffect(() => {
@@ -48,42 +54,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  // Verify token via server-side API route (no CORS, no client timing issues)
-  useEffect(() => {
-    if (didInit.current || !token) return;
-    didInit.current = true;
-    fetch("/api/init")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.error) {
-          setError(data.error);
-        } else {
-          setUser(data.user);
-          setOrgs(data.orgs ?? []);
-        }
-      })
-      .catch((e) => {
-        setError(e instanceof Error ? e.message : "Init failed");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [token]);
-
   const verify = useCallback(async () => {
+    if (!client) return;
     setLoading(true);
     setError(null);
     try {
-      const r = await fetch("/api/init");
-      const data = await r.json();
-      if (data.error) {
-        setError(data.error);
-        setUser(null);
-        setOrgs([]);
-      } else {
-        setUser(data.user);
-        setOrgs(data.orgs ?? []);
-      }
+      const u = await client.getUser();
+      setUser(u);
+      const o = await client.listOrgs();
+      setOrgs(o);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Verification failed");
       setUser(null);
@@ -91,7 +70,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [client]);
 
   const clearLog = useCallback(() => setApiLog([]), []);
 
