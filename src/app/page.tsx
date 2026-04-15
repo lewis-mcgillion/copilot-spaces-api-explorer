@@ -1,66 +1,43 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import Link from "next/link";
+import { CopilotIcon, GearIcon, PlusIcon, ListUnorderedIcon } from "@primer/octicons-react";
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div style={{ maxWidth: 600, margin: "0 auto", paddingTop: 48 }}>
+      <div style={{ textAlign: "center", marginBottom: 32 }}>
+        <CopilotIcon size={48} />
+        <h1 style={{ fontSize: 28, fontWeight: 700, margin: "16px 0 8px" }}>Copilot Spaces Explorer</h1>
+        <p style={{ fontSize: 16, color: "#656d76" }}>
+          Manage Copilot Spaces through the public REST API.
+          Create, edit, and delete spaces, resources, and collaborators.
+        </p>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        {[
+          { href: "/spaces", icon: ListUnorderedIcon, title: "My Spaces", desc: "View all your spaces" },
+          { href: "/spaces/new", icon: PlusIcon, title: "Create Space", desc: "Create a new Copilot Space" },
+          { href: "/settings", icon: GearIcon, title: "Settings", desc: "Configure your API token" },
+        ].map((card) => (
+          <Link
+            key={card.href}
+            href={card.href}
+            style={{
+              display: "block", padding: 20, border: "1px solid #d0d7de", borderRadius: 6,
+              textDecoration: "none", color: "inherit", transition: "border-color 0.15s",
+            }}
           >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+            <card.icon size={24} />
+            <h3 style={{ fontSize: 16, fontWeight: 600, margin: "8px 0 4px" }}>{card.title}</h3>
+            <p style={{ fontSize: 13, color: "#656d76", margin: 0 }}>{card.desc}</p>
+          </Link>
+        ))}
+      </div>
+
+      <div style={{ marginTop: 32, padding: 16, background: "#f6f8fa", borderRadius: 6, fontSize: 13 }}>
+        <strong>Quick start:</strong> Go to <Link href="/settings" style={{ color: "#0969da" }}>Settings</Link> and
+        enter your GitHub PAT with <code>copilot</code> scope to get started.
+      </div>
     </div>
   );
 }
