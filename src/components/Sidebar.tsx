@@ -61,8 +61,16 @@ export function Sidebar() {
         })}
       </ul>
       <div style={{ marginTop: 16, padding: "0 8px" }}>
-        <Link
-          href="#api-log"
+        <button
+          onClick={() => {
+            const el = document.getElementById("api-log");
+            if (el) {
+              // Expand the log panel by clicking its header
+              const header = el.querySelector("[data-toggle]") as HTMLElement;
+              if (header) header.click();
+              el.scrollIntoView({ behavior: "smooth" });
+            }
+          }}
           style={{
             display: "flex",
             alignItems: "center",
@@ -71,11 +79,14 @@ export function Sidebar() {
             fontSize: 12,
             color: "var(--fgColor-muted, #656d76)",
             textDecoration: "none",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
           }}
         >
           <LogIcon size={14} />
           API Log
-        </Link>
+        </button>
       </div>
     </nav>
   );

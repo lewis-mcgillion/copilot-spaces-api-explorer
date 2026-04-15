@@ -96,6 +96,7 @@ export function ApiLog() {
       }}
     >
       <div
+        data-toggle="api-log"
         style={{
           display: "flex",
           alignItems: "center",

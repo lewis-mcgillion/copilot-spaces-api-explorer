@@ -39,7 +39,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [client, setClient] = useState<ApiClient | null>(null);
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount (client-side only)
   useEffect(() => {
     const saved = localStorage.getItem("spaces-explorer-token");
     const savedUrl = localStorage.getItem("spaces-explorer-api-url");
@@ -66,11 +66,35 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Update client whenever token or baseUrl changes
   useEffect(() => {
-    if (token) {
-      setClient(new ApiClient(token, apiBaseUrl));
-    } else {
+    if (!token) {
       setClient(null);
+      return;
     }
+    const newClient = new ApiClient(token, apiBaseUrl);
+    setClient(newClient);
+
+    // Auto-verify with the new client immediately
+    setLoading(true);
+    setError(null);
+    let cancelled = false;
+    (async () => {
+      try {
+        const u = await newClient.getUser();
+        if (cancelled) return;
+        setUser(u);
+        const o = await newClient.listOrgs();
+        if (cancelled) return;
+        setOrgs(o);
+      } catch (e) {
+        if (cancelled) return;
+        setError(e instanceof Error ? e.message : "Verification failed");
+        setUser(null);
+        setOrgs([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, [token, apiBaseUrl]);
 
   const verify = useCallback(async () => {
@@ -89,14 +113,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [client]);
-
-  // Auto-verify whenever client changes (new token or URL)
-  useEffect(() => {
-    if (client) {
-      verify();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [client]);
 
   const clearLog = useCallback(() => setApiLog([]), []);

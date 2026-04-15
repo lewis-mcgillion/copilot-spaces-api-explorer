@@ -4,25 +4,21 @@ import { useApp } from "@/lib/context";
 
 export default function SettingsPage() {
   const { token, apiBaseUrl, user, orgs, loading, error, setToken, setApiBaseUrl, verify } = useApp();
-  const [tokenInput, setTokenInput] = useState("");
-  const [urlInput, setUrlInput] = useState("https://api.github.com");
+  const [tokenInput, setTokenInput] = useState(token);
+  const [urlInput, setUrlInput] = useState(apiBaseUrl);
   const [saved, setSaved] = useState(false);
 
-  // Sync inputs when context values load from localStorage
-  useEffect(() => {
-    if (token) setTokenInput(token);
-  }, [token]);
+  // When context loads token from localStorage, sync to local input state
+  useEffect(() => { setTokenInput(token); }, [token]);
+  useEffect(() => { setUrlInput(apiBaseUrl); }, [apiBaseUrl]);
 
-  useEffect(() => {
-    if (apiBaseUrl) setUrlInput(apiBaseUrl);
-  }, [apiBaseUrl]);
-
-  const handleSave = () => {
-    setToken(tokenInput);
-    setApiBaseUrl(urlInput);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tokenInput.trim()) return;
+    setToken(tokenInput.trim());
+    setApiBaseUrl(urlInput.trim() || "https://api.github.com");
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
-    // Auto-verify is triggered by context when client changes
   };
 
   return (
@@ -32,37 +28,41 @@ export default function SettingsPage() {
         Configure your GitHub token and API endpoint.
       </p>
 
-      <div className="form-group">
-        <label className="form-label">GitHub Personal Access Token</label>
-        <input
-          type="password"
-          value={tokenInput}
-          onChange={(e) => setTokenInput(e.target.value)}
-          placeholder="ghp_..."
-          style={{ fontFamily: "monospace" }}
-        />
-        <p className="form-hint">
-          Requires <code>copilot</code> scope. Stored only in your browser&apos;s localStorage.
-        </p>
-      </div>
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label className="form-label" htmlFor="token-input">GitHub Personal Access Token</label>
+          <input
+            id="token-input"
+            type="password"
+            value={tokenInput}
+            onChange={(e) => setTokenInput(e.target.value)}
+            placeholder="ghp_..."
+            style={{ fontFamily: "monospace" }}
+          />
+          <p className="form-hint">
+            Requires <code>copilot</code> scope. Stored only in your browser&apos;s localStorage.
+          </p>
+        </div>
 
-      <div className="form-group">
-        <label className="form-label">API Base URL</label>
-        <input
-          type="text"
-          value={urlInput}
-          onChange={(e) => setUrlInput(e.target.value)}
-        />
-      </div>
+        <div className="form-group">
+          <label className="form-label" htmlFor="url-input">API Base URL</label>
+          <input
+            id="url-input"
+            type="text"
+            value={urlInput}
+            onChange={(e) => setUrlInput(e.target.value)}
+          />
+        </div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
-        <button className="btn btn-primary" onClick={handleSave} disabled={!tokenInput}>
-          {saved ? "✓ Saved" : "Save & Verify"}
-        </button>
-        <button className="btn btn-secondary" onClick={verify} disabled={!token || loading}>
-          {loading ? "Verifying..." : "Verify Token"}
-        </button>
-      </div>
+        <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+          <button className="btn btn-primary" type="submit">
+            {saved ? "✓ Saved" : "Save & Verify"}
+          </button>
+          <button className="btn btn-secondary" type="button" onClick={verify} disabled={!token || loading}>
+            {loading ? "Verifying..." : "Verify Token"}
+          </button>
+        </div>
+      </form>
 
       {error && <div className="alert-error">{error}</div>}
 
