@@ -33,6 +33,29 @@ export default function CreateSpacePage() {
     ...orgs.map((o) => ({ key: `org-${o.id}`, label: o.login, type: "org" as const, id: o.id, login: o.login })),
   ];
 
+  const selectedOwner = owners.find((o) => o.key === ownerKey) || owners[0];
+  const isOrgOwner = selectedOwner.type === "org";
+  const baseRoleOptions = isOrgOwner
+    ? [
+        { value: "reader", label: "Reader" },
+        { value: "writer", label: "Writer" },
+        { value: "admin", label: "Admin" },
+        { value: "no_access", label: "No Access" },
+      ]
+    : [
+        { value: "reader", label: "Reader" },
+        { value: "no_access", label: "No Access" },
+      ];
+
+  const handleOwnerChange = (key: string) => {
+    setOwnerKey(key);
+    const newOwner = owners.find((o) => o.key === key) || owners[0];
+    // Reset base_role to "reader" if switching to user and current role is org-only
+    if (newOwner.type === "user" && (form.base_role === "writer" || form.base_role === "admin")) {
+      setForm({ ...form, base_role: "reader" });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!client) return;
@@ -59,7 +82,7 @@ export default function CreateSpacePage() {
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label className="form-label">Owner</label>
-          <select value={ownerKey} onChange={(e) => setOwnerKey(e.target.value)}>
+          <select value={ownerKey} onChange={(e) => handleOwnerChange(e.target.value)}>
             {owners.map((o) => (
               <option key={o.key} value={o.key}>{o.label}</option>
             ))}
@@ -100,8 +123,9 @@ export default function CreateSpacePage() {
             value={form.base_role}
             onChange={(e) => setForm({ ...form, base_role: e.target.value })}
           >
-            <option value="reader">Reader</option>
-            <option value="no_access">No Access</option>
+            {baseRoleOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
           </select>
         </div>
 

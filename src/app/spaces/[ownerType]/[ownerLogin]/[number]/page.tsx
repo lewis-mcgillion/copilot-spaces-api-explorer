@@ -156,8 +156,19 @@ export default function SpaceDetailPage() {
           <div className="form-group">
             <label className="form-label">Base Role</label>
             <select value={editForm.base_role} onChange={(e) => setEditForm({ ...editForm, base_role: e.target.value })}>
-              <option value="reader">Reader</option>
-              <option value="no_access">No Access</option>
+              {ownerType === "org" ? (
+                <>
+                  <option value="reader">Reader</option>
+                  <option value="writer">Writer</option>
+                  <option value="admin">Admin</option>
+                  <option value="no_access">No Access</option>
+                </>
+              ) : (
+                <>
+                  <option value="reader">Reader</option>
+                  <option value="no_access">No Access</option>
+                </>
+              )}
             </select>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
