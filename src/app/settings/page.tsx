@@ -1,15 +1,24 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useApp } from "@/lib/context";
 
 export default function SettingsPage() {
   const { token, apiBaseUrl, user, orgs, loading, error, setToken, setApiBaseUrl, verify } = useApp();
   const [tokenInput, setTokenInput] = useState(token);
   const [urlInput, setUrlInput] = useState(apiBaseUrl);
+  const [saved, setSaved] = useState(false);
 
-  const handleSave = () => {
+  // Sync inputs when context values load from localStorage
+  useEffect(() => {
+    if (token && !tokenInput) setTokenInput(token);
+    if (apiBaseUrl && !urlInput) setUrlInput(apiBaseUrl);
+  }, [token, apiBaseUrl]);
+
+  const handleSave = async () => {
     setToken(tokenInput);
     setApiBaseUrl(urlInput);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   };
 
   return (
@@ -65,7 +74,7 @@ export default function SettingsPage() {
           onClick={handleSave}
           style={{
             padding: "6px 16px",
-            backgroundColor: "#1f883d",
+            backgroundColor: saved ? "#1a7f37" : "#1f883d",
             color: "#fff",
             border: "none",
             borderRadius: 6,
@@ -74,11 +83,11 @@ export default function SettingsPage() {
             cursor: "pointer",
           }}
         >
-          Save
+          {saved ? "✓ Saved" : "Save"}
         </button>
         <button
           onClick={verify}
-          disabled={!token || loading}
+          disabled={!tokenInput || loading}
           style={{
             padding: "6px 16px",
             backgroundColor: "#f6f8fa",
