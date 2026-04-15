@@ -30,19 +30,16 @@ export function useApp() {
   return ctx;
 }
 
-// Create client once at module level (avoids re-creation on re-render)
-const globalClient = ENV_TOKEN ? new ApiClient(ENV_TOKEN, ENV_BASE_URL) : null;
-
 export function AppProvider({ children }: { children: ReactNode }) {
   const token = ENV_TOKEN;
   const apiBaseUrl = ENV_BASE_URL;
   const [user, setUser] = useState<User | null>(null);
   const [orgs, setOrgs] = useState<Org[]>([]);
   const [apiLog, setApiLog] = useState<ApiLogEntry[]>([]);
-  const [loading, setLoading] = useState(!!globalClient);
+  const [loading, setLoading] = useState(!!token);
   const [error, setError] = useState<string | null>(null);
-  const client = globalClient;
-  const didVerify = useRef(false);
+  const client = token ? new ApiClient(token, apiBaseUrl) : null;
+  const didInit = useRef(false);
 
   // Listen for API log entries
   useEffect(() => {
@@ -51,41 +48,42 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  // Auto-verify once on mount
+  // Verify token via server-side API route (no CORS, no client timing issues)
   useEffect(() => {
-    if (!client || didVerify.current) return;
-    didVerify.current = true;
-    setLoading(true);
-    setError(null);
-    console.log("[spaces-explorer] Verifying token...");
-    (async () => {
-      try {
-        const u = await client.getUser();
-        console.log("[spaces-explorer] Verified user:", u.login);
-        setUser(u);
-        const o = await client.listOrgs();
-        console.log("[spaces-explorer] Found", o.length, "orgs");
-        setOrgs(o);
-      } catch (e) {
-        console.error("[spaces-explorer] Verify failed:", e);
-        setError(e instanceof Error ? e.message : "Verification failed");
-        setUser(null);
-        setOrgs([]);
-      } finally {
+    if (didInit.current || !token) return;
+    didInit.current = true;
+    fetch("/api/init")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.error) {
+          setError(data.error);
+        } else {
+          setUser(data.user);
+          setOrgs(data.orgs ?? []);
+        }
+      })
+      .catch((e) => {
+        setError(e instanceof Error ? e.message : "Init failed");
+      })
+      .finally(() => {
         setLoading(false);
-      }
-    })();
-  }, [client]);
+      });
+  }, [token]);
 
   const verify = useCallback(async () => {
-    if (!client) return;
     setLoading(true);
     setError(null);
     try {
-      const u = await client.getUser();
-      setUser(u);
-      const o = await client.listOrgs();
-      setOrgs(o);
+      const r = await fetch("/api/init");
+      const data = await r.json();
+      if (data.error) {
+        setError(data.error);
+        setUser(null);
+        setOrgs([]);
+      } else {
+        setUser(data.user);
+        setOrgs(data.orgs ?? []);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Verification failed");
       setUser(null);
@@ -93,7 +91,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [client]);
+  }, []);
 
   const clearLog = useCallback(() => setApiLog([]), []);
 
