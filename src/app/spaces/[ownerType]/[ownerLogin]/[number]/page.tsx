@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useApp } from "@/lib/context";
 import type { Space, OwnerType, CreateSpaceParams } from "@/lib/types";
@@ -9,6 +9,7 @@ import { PencilIcon, TrashIcon, ArrowLeftIcon } from "@primer/octicons-react";
 export default function SpaceDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const pathname = usePathname();
   const { client, user, orgs } = useApp();
 
   const ownerType = params.ownerType as OwnerType;
@@ -90,7 +91,7 @@ export default function SpaceDetailPage() {
           </div>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={() => setEditing(!editing)} className="btn btn-secondary btn-sm">
+          <button onClick={() => setEditing(true)} className="btn btn-secondary btn-sm" disabled={editing}>
             <PencilIcon size={14} /> Edit
           </button>
           <button onClick={() => setConfirmDelete(true)} className="btn btn-danger btn-sm">
@@ -106,7 +107,7 @@ export default function SpaceDetailPage() {
           { label: "Resources", href: `${basePath}/resources` },
           { label: "Collaborators", href: `${basePath}/collaborators` },
         ].map((tab) => {
-          const active = typeof window !== "undefined" && window.location.pathname === tab.href;
+          const active = pathname === tab.href;
           return (
             <Link key={tab.label} href={tab.href} className={active ? "active" : ""}>
               {tab.label}
@@ -175,25 +176,35 @@ export default function SpaceDetailPage() {
             <button type="submit" disabled={saving} className="btn btn-primary">
               {saving ? "Saving..." : "Save Changes"}
             </button>
-            <button type="button" onClick={() => setEditing(false)} className="btn btn-secondary">
+            <button type="button" onClick={() => {
+              setEditing(false);
+              if (space) setEditForm({ name: space.name, description: space.description || "", general_instructions: space.general_instructions || "", base_role: space.base_role || "reader" });
+            }} className="btn btn-secondary">
               Cancel
             </button>
           </div>
         </form>
       ) : (
         <div>
-          {space.description && (
-            <div style={{ marginBottom: 16 }}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Description</h3>
+          <div style={{ marginBottom: 16 }}>
+            <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Description</h3>
+            {space.description ? (
               <p style={{ margin: 0 }}>{space.description}</p>
-            </div>
-          )}
-          {space.general_instructions && (
+            ) : (
+              <p style={{ margin: 0, color: "var(--muted)", fontStyle: "italic" }}>No description</p>
+            )}
+          </div>
+          {space.general_instructions ? (
             <div style={{ marginBottom: 16 }}>
               <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>General Instructions</h3>
               <pre style={{ fontSize: 13, whiteSpace: "pre-wrap", background: "var(--surface)", padding: 12, borderRadius: 6, border: "1px solid var(--border)", margin: 0 }}>
                 {space.general_instructions}
               </pre>
+            </div>
+          ) : (
+            <div style={{ marginBottom: 16 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>General Instructions</h3>
+              <p style={{ margin: 0, color: "var(--muted)", fontStyle: "italic" }}>No instructions set</p>
             </div>
           )}
           <div style={{ display: "flex", gap: 24, fontSize: 13, color: "var(--muted)" }}>

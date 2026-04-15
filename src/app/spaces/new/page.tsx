@@ -2,7 +2,6 @@
 import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/lib/context";
-import type { OwnerType } from "@/lib/types";
 
 export default function CreateSpacePage() {
   const { client, user, orgs, token } = useApp();
@@ -10,6 +9,7 @@ export default function CreateSpacePage() {
   const formRef = useRef<HTMLFormElement>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [ownerKey, setOwnerKey] = useState("user");
 
   if (!token) {
     return (
@@ -32,6 +32,9 @@ export default function CreateSpacePage() {
     ...orgs.map((o) => ({ key: `org-${o.id}`, label: o.login, type: "org" as const, id: o.id, login: o.login })),
   ];
 
+  const selectedOwner = owners.find((o) => o.key === ownerKey) || owners[0];
+  const isOrg = selectedOwner.type === "org";
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!client || !formRef.current) return;
@@ -39,8 +42,7 @@ export default function CreateSpacePage() {
     setError(null);
 
     const fd = new FormData(formRef.current);
-    const ownerKey = fd.get("owner") as string;
-    const owner = owners.find((o) => o.key === ownerKey) || owners[0];
+    const owner = owners.find((o) => o.key === fd.get("owner") as string) || owners[0];
 
     try {
       const space = await client.createSpace(owner.type, owner.id, {
@@ -63,10 +65,10 @@ export default function CreateSpacePage() {
 
       {error && <div className="alert-error">{error}</div>}
 
-      <form ref={formRef} onSubmit={handleSubmit} action="/spaces/new">
+      <form ref={formRef} onSubmit={handleSubmit}>
         <div className="form-group">
           <label className="form-label" htmlFor="owner">Owner</label>
-          <select id="owner" name="owner" defaultValue="user">
+          <select id="owner" name="owner" defaultValue="user" onChange={(e) => setOwnerKey(e.target.value)}>
             {owners.map((o) => (
               <option key={o.key} value={o.key}>{o.label}</option>
             ))}
@@ -95,7 +97,12 @@ export default function CreateSpacePage() {
 
         <div className="form-group">
           <label className="form-label" htmlFor="base_role">Base Role</label>
-          <BaseRoleSelect owners={owners} />
+          <select id="base_role" name="base_role" defaultValue="reader">
+            <option value="reader">Reader</option>
+            {isOrg && <option value="writer">Writer</option>}
+            {isOrg && <option value="admin">Admin</option>}
+            <option value="no_access">No Access</option>
+          </select>
         </div>
 
         <button type="submit" disabled={saving} className="btn btn-primary">
@@ -103,30 +110,5 @@ export default function CreateSpacePage() {
         </button>
       </form>
     </div>
-  );
-}
-
-/** Client-only component that shows role options based on selected owner */
-function BaseRoleSelect({ owners }: { owners: { key: string; type: OwnerType }[] }) {
-  const [ownerKey, setOwnerKey] = useState("user");
-  const selectedOwner = owners.find((o) => o.key === ownerKey) || owners[0];
-  const isOrg = selectedOwner.type === "org";
-
-  // Listen for owner select changes
-  React.useEffect(() => {
-    const ownerSelect = document.getElementById("owner") as HTMLSelectElement | null;
-    if (!ownerSelect) return;
-    const handler = () => setOwnerKey(ownerSelect.value);
-    ownerSelect.addEventListener("change", handler);
-    return () => ownerSelect.removeEventListener("change", handler);
-  }, []);
-
-  return (
-    <select id="base_role" name="base_role" defaultValue="reader">
-      <option value="reader">Reader</option>
-      {isOrg && <option value="writer">Writer</option>}
-      {isOrg && <option value="admin">Admin</option>}
-      <option value="no_access">No Access</option>
-    </select>
   );
 }

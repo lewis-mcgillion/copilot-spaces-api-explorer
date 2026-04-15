@@ -117,6 +117,7 @@ export function ApiLog() {
               clearLog();
             }}
             style={{ background: "none", border: "none", cursor: "pointer", padding: 2 }}
+            aria-label="Clear API log"
           >
             <TrashIcon size={14} />
           </button>

@@ -13,6 +13,7 @@ export default function SpacesListPage() {
 
   useEffect(() => {
     if (!client || !user) return;
+    let cancelled = false;
     setLoading(true);
     setError(null);
 
@@ -26,20 +27,27 @@ export default function SpacesListPage() {
         console.warn("Failed to load user spaces:", e);
       }
 
-      for (const org of orgs) {
-        try {
+      // Fetch org spaces in parallel
+      const orgResults = await Promise.allSettled(
+        orgs.map(async (org) => {
           const orgSpaces = await client.listOrgSpaces(org.id);
-          all.push(...orgSpaces.map((s) => ({ ...s, _ownerType: "org" as const })));
-        } catch (e) {
-          console.warn(`Failed to load spaces for org ${org.login}:`, e);
+          return orgSpaces.map((s) => ({ ...s, _ownerType: "org" as const }));
+        })
+      );
+      for (const result of orgResults) {
+        if (result.status === "fulfilled") {
+          all.push(...result.value);
         }
       }
 
-      setSpaces(all);
-      setLoading(false);
+      if (!cancelled) {
+        setSpaces(all);
+        setLoading(false);
+      }
     };
 
     fetchAll();
+    return () => { cancelled = true; };
   }, [client, user, orgs]);
 
   if (!token) {
@@ -71,7 +79,7 @@ export default function SpacesListPage() {
         </Link>
       </div>
 
-      {loading && <p style={{ color: "var(--muted)" }}>Loading spaces...</p>}
+      {loading && spaces.length === 0 && <p style={{ color: "var(--muted)" }}>Loading spaces...</p>}
       {error && <div className="alert-error">{error}</div>}
 
       {!loading && spaces.length === 0 && (

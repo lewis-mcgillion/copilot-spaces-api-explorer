@@ -35,7 +35,7 @@ export function Sidebar() {
       </div>
       <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
         {links.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || (href !== "/" && pathname.startsWith(href) && href !== "/spaces/new");
+          const active = pathname === href || (href === "/spaces" && pathname.startsWith("/spaces/") && !pathname.startsWith("/spaces/new"));
           return (
             <li key={href}>
               <Link

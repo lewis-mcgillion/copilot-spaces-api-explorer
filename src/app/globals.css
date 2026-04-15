@@ -191,7 +191,7 @@ textarea {
 .tab-bar a.active {
   color: var(--foreground);
   font-weight: 600;
-  border-bottom-color: #fd8c73;
+  border-bottom-color: var(--accent);
 }
 
 /* List items */
