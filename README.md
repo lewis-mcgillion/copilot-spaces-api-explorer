@@ -16,7 +16,7 @@ A Next.js 16 app for testing and exploring all 28 endpoints of the Copilot Space
    cp .env.example .env.local
    # Edit .env.local and set NEXT_PUBLIC_GITHUB_TOKEN=ghp_your_token_here
    ```
-   The token needs the `copilot` scope.
+   The token needs the `copilot` and `read:user` scope.
 
 3. Run:
    ```bash
